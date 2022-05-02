@@ -56,19 +56,24 @@ class Game
     {
         $i = 0;
         while (!$this->gameOver()) {
-            $i > 0 ? $this->addTroops() : "";
+            $i > 0 ? $this->addTroops() : ""; //adiciona tropas a cada país após a primeira rodada, pois cada país já começa com 3 tropas.
             $i++;
             print "===== Rodada # $i =====\n";
             $this->stats();
             $this->playRound();
-            sleep(3);
         }
     }
 
+    /*
+    * Adciona as tropas de cada rodada a cada país.
+    * 3 tropas + 1 para cada país conquistado.
+    */
     public function addTroops(): void
     {
         foreach ($this->countries as $country) {
-            !$country->isConquered() ? $country->killTroops(-3) : "";
+            if(!$country->isConquered()) {
+                $country->killTroops(-3 + (count($this->getUnconqueredCountries())-6)); 
+            }
         }
     }
 
@@ -110,10 +115,8 @@ class Game
 
             $defendingCountry = null;
             if ($attackingCountry instanceof ComputerPlayerCountry) {
-                print $attackingCountry->getName() . " computer \n";
                 $defendingCountry = $attackingCountry->chooseToAttack();
             } elseif ($attackingCountry instanceof HumanPlayerCountry) {
-                print $attackingCountry->getName() . " human \n";
                 $neighbors = $attackingCountry->getNeighbors();
                 $defendingCountryName = null;
                 do {

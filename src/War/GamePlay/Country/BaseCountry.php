@@ -13,10 +13,25 @@ class BaseCountry implements CountryInterface
      *
      * @var string
      */
-    protected $name;
-    protected $neighbors;
-    protected $NumberOfTroops = 3;
+    protected string $name;
+    
+    /*
+    * Vizinhança do país. Quais páises ele pode atacar.
+    */
+    protected array $neighbors;
 
+    /*
+    * Número de tropas atuais de um país. Cada país começa com 3.
+    * Se começasse com 0 e usasse a função addTroops na primeira rodada, 
+    * cada país começaria com isConquered como TRUE.
+    */
+    protected int $numberOfTroops = 3;
+
+    /*
+    * Diz por qual outro país esse país (this) foi conquistado. 
+    * Serve para outros países saberem quem atacar depois do país ser conquistado.
+    */
+    protected $conqueredBy;
     /**
      * Builder.
      *
@@ -79,7 +94,7 @@ class BaseCountry implements CountryInterface
      */
     public function getNumberOfTroops(): int
     {
-        return $this->NumberOfTroops;
+        return $this->numberOfTroops;
     }
 
     /**
@@ -96,13 +111,16 @@ class BaseCountry implements CountryInterface
      */
     public function isConquered(): bool
     {
-        if ($this->NumberOfTroops <= 0) {
+        if ($this->numberOfTroops <= 0) {
             return true;
         } else {
             return false;
         }
     }
 
+    public function getConqueredBy() {
+        return $this->conqueredBy;
+    }
     /**
      * Called when, after a battle, the defending country end up with 0 troops.
      *
@@ -113,16 +131,38 @@ class BaseCountry implements CountryInterface
      */
     public function conquer(CountryInterface $conqueredCountry): void
     {
+        /*
+        * Pega os vizinhos do país conquistado e coloca como seus.
+        */
         $this->neighbors = array_merge($this->neighbors, $conqueredCountry->neighbors);
-
+        
+        /*
+        * Remove vizinhos repetidos.
+        */
         $this->neighbors = array_unique($this->neighbors, SORT_REGULAR);
+        
+        /*
+        * Remove o próprio país da vizinhança para evitar se atacar.
+        */
+        $this->unsetNeighbor($this->name);
 
-        $this->unsetCountryByName($this->name);
+        /*
+        * Remove o país conquistado da vizinhança porque agora ele faz parte do 
+        * seu próprio território e não é mais um alvo válido.
+        */
+        $this->unsetNeighbor($conqueredCountry->name);
 
-        $this->unsetCountryByName($conqueredCountry->name);
+        /*
+        * Dá um valor ao conqueredBy do país conquistado.
+        */
+        $conqueredCountry->conqueredBy = $this;
     }
-
-    public function unsetCountryByName($name)
+    
+    /*
+    *Remove um país do array da vizinhança passando o nome do país. 
+    *Função para auxiliar a função conquer.
+    */
+    public function unsetNeighbor($name)
     {
         $array = $this->neighbors;
 
@@ -153,7 +193,7 @@ class BaseCountry implements CountryInterface
      */
     public function killTroops(int $killedTroops): void
     {
-        $this->NumberOfTroops = $this->NumberOfTroops - $killedTroops;
+        $this->numberOfTroops = $this->numberOfTroops - $killedTroops;
     }
 
 }

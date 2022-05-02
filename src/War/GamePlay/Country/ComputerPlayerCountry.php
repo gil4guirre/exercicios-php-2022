@@ -19,9 +19,25 @@ class ComputerPlayerCountry extends BaseCountry {
    *   The country that will be attacked, NULL if none will be.
    */
   public function chooseToAttack(): ?CountryInterface {
-    // @TODO
-    $attacked = array_rand($this->neighbors, 1);
-    return $this->neighbors[$attacked];
+    $attackedID = array_rand($this->neighbors, 1);
+    $attacked = $this->neighbors[$attackedID];
+    
+    return $this->unconqueredTarget($attacked);
   }
 
+  /*
+  * Função de apoio à função chooseToAttack.
+  * Passa um país e checa se ele foi conquistado. 
+  * Caso tenha sido conquistado, ele retorna seu conquistador.
+  * Caso seu conquistador também tenha sido conquistado, ele retorna o conquistador do conquistador.
+  */
+  public function unconqueredTarget($target) {
+    if($target->isConquered()){
+      $targetConqueror = $target->getConqueredBy();
+      return $this->unconqueredTarget($targetConqueror);
+    }else{
+      return $target;
+    }
+
+  }
 }
