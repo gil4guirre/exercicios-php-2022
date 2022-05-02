@@ -20,6 +20,8 @@ class ComputerPlayerCountry extends BaseCountry {
    */
   public function chooseToAttack(): ?CountryInterface {
     // @TODO
+    $attacked = array_rand($this->neighbors, 1);
+    return $this->neighbors[$attacked];
   }
 
 }
